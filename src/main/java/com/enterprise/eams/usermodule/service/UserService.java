@@ -1,5 +1,7 @@
 package com.enterprise.eams.usermodule.service;
 
+import com.enterprise.eams.common.email.UserEmailService;
+import com.enterprise.eams.common.security.JwtUtil;
 import com.enterprise.eams.usermodule.dtos.ApiResponse;
 import com.enterprise.eams.usermodule.dtos.LoginResponseDTO;
 import com.enterprise.eams.usermodule.dtos.RegisterRequestDTO;
@@ -19,6 +21,10 @@ public class UserService {
     @Autowired
     private UserRepository userRepo;
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
+    private UserEmailService userEmailService;
 
 
     public List<User> getAllUsers() {
@@ -68,6 +74,11 @@ public class UserService {
 
         User savedUser = userRepo.save(user);
 
+        userEmailService.sendWelcomeEmail(
+                savedUser.getEmail(),
+                savedUser.getName(),
+                savedUser.getRole().name());
+
         RegisterResponseDTO response = new RegisterResponseDTO();
         response.setId(savedUser.getId());
         response.setName(savedUser.getName());
@@ -78,6 +89,8 @@ public class UserService {
 
     }
 
+
+
     public ApiResponse<LoginResponseDTO> login(String email, String password) {
 
         email=email.trim().toLowerCase();
@@ -87,12 +100,12 @@ public class UserService {
         if (!encoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid credentials");
         }
-
+        String token=jwtUtil.generateToken(user.getEmail());
         LoginResponseDTO data =new LoginResponseDTO(
                 user.getId(),
                 user.getName(),
                 user.getRole().name()
         );
-        return new ApiResponse<>("Login Successful",data);
+        return new ApiResponse<LoginResponseDTO>("Login Successful",data,token);
     }
 }
