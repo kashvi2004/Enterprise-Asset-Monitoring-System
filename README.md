@@ -1,198 +1,175 @@
-﻿# Enterprise-Asset-Monitoring-System
-# 📌 EAMS - User Module (Module 1)
+# 📌 EAMS - Asset Module (Module 2)
 
-## 🚀 Overview
-
-This module handles **User Management and Authentication** for the EAMS system.
-It includes registration, login, JWT-based authentication, and email notification.
+## 🚀 Overview  
+This module handles **Asset Management** in the EAMS system.  
+It enables Managers to create, update, assign, and monitor assets such as machines and equipment, along with defining threshold limits for sensor monitoring.
 
 ---
 
-## 🧱 Tech Stack
-
-* Java 17
-* Spring Boot
-* Spring Security
-* Spring Data JPA
-* MySQL
-* JWT (JSON Web Token)
-* Java Mail Sender
+## 🧱 Tech Stack  
+- Java 17  
+- Spring Boot  
+- Spring Data JPA  
+- MySQL  
+- Lombok  
+- (Integrated with User Module)
 
 ---
 
-## ✨ Features Implemented
+## ✨ Features Implemented  
 
-### 🔐 Authentication & Security
+### 🏭 Asset Management  
+- Create Asset  
+- Get All Assets  
+- Get Asset by ID  
+- Update Asset  
+- Delete Asset  
 
-* User Registration
-* User Login
-* Password Encryption using BCrypt
-* JWT Token Generation & Validation
-* Protected APIs using JWT Filter
+### 👥 Asset Assignment  
+- Assign assets to Users (Operators)  
+- Many-to-One relationship (Multiple assets → One user)  
 
----
+### 📊 Threshold Configuration  
+- Set temperature threshold  
+- Set pressure threshold  
+- Used for triggering alerts in Sensor Module  
 
-### 👤 User Management
-
-* Get All Users
-* Get User by ID
-* Update User
-* Delete User
-
----
-
-### 📧 Email Integration
-
-* Welcome Email sent after successful registration
-* HTML-based email template
-* Modular Email Service Architecture
+### ⚙️ Status Tracking  
+- Asset status:  
+  - NORMAL  
+  - CRITICAL  
+- Automatically updated based on sensor data  
 
 ---
 
-### 🧾 Validation & Error Handling
-
-* DTO-based validation
-* Proper error messages
-* Clean API responses using generic `ApiResponse<T>`
-
----
-
-## 📂 Project Structure
-
-```
-com.enterprise.eams
-│
-├── usermodule
-│   ├── controller
-│   ├── service
-│   ├── repository
-│   ├── entity
-│   ├── dtos
-│   └── enums
-│
-├── common
-│   ├── security (JWT, filters)
-│   └── email
-│       ├── EmailService
-│       ├── UserEmailService
-```
+## 🧾 Validation & Error Handling  
+- DTO-based request handling  
+- Clean API responses  
+- Proper exception handling (Asset not found, etc.)  
 
 ---
 
-## 🔑 API Endpoints
+## 📂 Project Structure  
 
-### 🟢 Register User
+com.enterprise.eams  
+│  
+├── assetmodule  
+│   ├── controller  
+│   ├── service  
+│   ├── repository  
+│   ├── entity  
+│   ├── dto  
+│  
+├── common  
+│   └── (shared utilities, if any)  
 
-```
-POST /api/auth/register
-```
+---
+
+## 🔑 API Endpoints  
+
+### 🟢 Create Asset (Manager)
+POST /api/assets  
 
 **Request Body**
-
-```json
 {
-  "name": "John Doe",
-  "email": "john@gmail.com",
-  "password": "Valid@123"
+  "name": "Boiler Machine",
+  "type": "Thermal",
+  "location": "Plant A",
+  "thresholdTemp": 80,
+  "thresholdPressure": 120
 }
-```
 
 ---
 
-### 🟢 Login User
+### 🔵 Get All Assets
+GET /api/assets  
 
-```
-POST /api/auth/login
-```
+---
 
-**Response**
+### 🔵 Get Asset by ID
+GET /api/assets/{id}  
 
-```json
+---
+
+### 🟡 Update Asset
+PUT /api/assets/{id}  
+
+---
+
+### 🔴 Delete Asset
+DELETE /api/assets/{id}  
+
+---
+
+## 📤 Sample Response  
+
 {
-  "message": "Login Successful",
-  "data": {
-    "id": 1,
-    "name": "John Doe",
-    "role": "OPERATOR"
-  },
-  "token": "JWT_TOKEN"
+  "id": 1,
+  "name": "Boiler Machine",
+  "type": "Thermal",
+  "location": "Plant A",
+  "thresholdTemp": 80,
+  "thresholdPressure": 120,
+  "status": "NORMAL"
 }
-```
 
 ---
 
-### 🔒 Get All Users (Protected)
+## 🔗 Relationships  
 
-```
-GET /api/users
-```
-
-**Header Required**
-
-```
-Authorization: Bearer <JWT_TOKEN>
-```
+- One User → Many Assets  
+- One Asset → Many SensorData  
+- One Asset → Many Alerts  
 
 ---
 
-## 🔐 JWT Flow
+## ⚙️ Business Logic  
 
-1. User logs in
-2. Server generates JWT token
-3. Client stores token
-4. Token is sent in request headers
-5. JWT Filter validates token
-6. Access granted if valid
+- Assets store threshold values for monitoring  
+- Sensor module uses these thresholds to:  
+  - Trigger alerts  
+  - Update asset status  
 
 ---
 
-## 📧 Email Configuration
+## 🔐 Access Control  
 
-Add in `application.properties`:
-
-```
-spring.mail.host=smtp.gmail.com
-spring.mail.port=587
-spring.mail.username=your_email@gmail.com
-spring.mail.password=your_app_password
-spring.mail.properties.mail.smtp.auth=true
-spring.mail.properties.mail.smtp.starttls.enable=true
-```
-
-⚠️ Use **App Password**, not your Gmail password.
+Role     | Permissions  
+---------|-------------  
+MANAGER  | Full CRUD operations  
+OPERATOR | View assigned assets only  
 
 ---
 
-## 🧪 Testing Flow
+## 🧪 Testing Flow  
 
-1. Register user → email received
-2. Login → JWT token generated
-3. Access protected API with token → success
-4. Without token → 401 Unauthorized
-
----
-
-## 📌 Notes
-
-* Email sending is modular and reusable
-* JWT authentication is implemented at filter level
-* Clean separation of concerns followed
+- Create asset  
+- Assign asset to user  
+- Fetch asset list  
+- Update asset details  
+- Delete asset  
+- Verify integration with sensor data  
 
 ---
 
-## ✅ Module Status
+## 📌 Notes  
 
-```
-✔ User Module Completed
-✔ Authentication Implemented
-✔ Email Integration Done
-✔ Ready for next module
-```
+- Asset module is the **core linking module**  
+- Used by:
+  - Sensor Module  
+  - Alert Module  
+- Clean separation using DTOs and service layer  
+
+---
+
+## ✅ Module Status  
+
+✔ Asset CRUD Completed  
+✔ User Assignment Implemented  
+✔ Threshold Logic Integrated  
+✔ Ready for Sensor & Alert Modules  
 
 ---
 
-## 👩‍💻 Author
-
-Developed as part of EAMS project (Module 1)
-
----
+## 👩‍💻 Author  
+Developed as part of EAMS project (Module 2)
