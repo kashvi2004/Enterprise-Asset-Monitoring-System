@@ -1,31 +1,33 @@
 package com.enterprise.eams.common.email;
 
-
-import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+@RequiredArgsConstructor
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
 
-    public void sendHtmlEmail(String to, String subject, String htmlBody) {
+    private final JavaMailSender mailSender;
+
+    public void sendEmail(String to, String subject, String body) {
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            System.out.println("Sending email to: " + to);
 
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(htmlBody, true);
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject(subject);
+            message.setText(body);
 
             mailSender.send(message);
 
+            System.out.println("EMAIL SENT SUCCESSFULLY");
+
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("Email sending failed");
         }
     }

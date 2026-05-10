@@ -1,4 +1,13 @@
 package com.enterprise.eams.sensormodule.repository;
 
-public class SensorDataRepository {
+import com.enterprise.eams.sensormodule.entity.SensorData;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface SensorDataRepository extends JpaRepository<SensorData, Long> {
+
+    List<SensorData> findByAsset_Id(Long assetId);
+    List<SensorData> findByAsset_IdOrderByTimestampDesc(Long assetId);
+
 }
