@@ -1,198 +1,170 @@
-﻿# Enterprise-Asset-Monitoring-System
-# 📌 EAMS - User Module (Module 1)
+# 📌 EAMS - Alert Module (Module 4)
 
-## 🚀 Overview
-
-This module handles **User Management and Authentication** for the EAMS system.
-It includes registration, login, JWT-based authentication, and email notification.
+## 🚀 Overview  
+This module handles **Alert Management** in the EAMS system.  
+It monitors sensor data against asset thresholds and generates alerts when abnormal conditions occur. It also manages alert lifecycle and sends email notifications.
 
 ---
 
-## 🧱 Tech Stack
-
-* Java 17
-* Spring Boot
-* Spring Security
-* Spring Data JPA
-* MySQL
-* JWT (JSON Web Token)
-* Java Mail Sender
+## 🧱 Tech Stack  
+- Java 17  
+- Spring Boot  
+- Spring Data JPA  
+- MySQL  
+- Java Mail Sender  
+- Lombok  
 
 ---
 
-## ✨ Features Implemented
+## ✨ Features Implemented  
 
-### 🔐 Authentication & Security
-
-* User Registration
-* User Login
-* Password Encryption using BCrypt
-* JWT Token Generation & Validation
-* Protected APIs using JWT Filter
+### 🚨 Alert Generation  
+- Automatically triggered when sensor values exceed thresholds  
+- Integrated with Sensor Data Module  
+- Supports different alert types (e.g., THRESHOLD_BREACH)
 
 ---
 
-### 👤 User Management
-
-* Get All Users
-* Get User by ID
-* Update User
-* Delete User
-
----
-
-### 📧 Email Integration
-
-* Welcome Email sent after successful registration
-* HTML-based email template
-* Modular Email Service Architecture
+### 🔄 Alert Lifecycle Management  
+- Alert Status:
+  - ACTIVE  
+  - RESOLVED  
+- Updates existing alert if already active  
+- Prevents duplicate alerts for same asset  
 
 ---
 
-### 🧾 Validation & Error Handling
-
-* DTO-based validation
-* Proper error messages
-* Clean API responses using generic `ApiResponse<T>`
-
----
-
-## 📂 Project Structure
-
-```
-com.enterprise.eams
-│
-├── usermodule
-│   ├── controller
-│   ├── service
-│   ├── repository
-│   ├── entity
-│   ├── dtos
-│   └── enums
-│
-├── common
-│   ├── security (JWT, filters)
-│   └── email
-│       ├── EmailService
-│       ├── UserEmailService
-```
+### 📧 Email Notification  
+- Sends alert email when system enters CRITICAL state  
+- Sends resolve email when system returns to NORMAL  
+- Includes asset details and sensor values  
+- Cooldown logic to prevent spam  
 
 ---
 
-## 🔑 API Endpoints
+### ⚙️ Smart Alert Handling  
+- Checks previous vs current asset status  
+- Creates alert only on state transition  
+- Updates existing alert instead of creating duplicates  
 
-### 🟢 Register User
+---
 
-```
-POST /api/auth/register
-```
+## 🧾 Validation & Error Handling  
+- Asset existence validation  
+- Null checks for assigned users  
+- Clean exception handling  
+- Controlled alert creation logic  
+
+---
+
+## 📂 Project Structure  
+
+com.enterprise.eams  
+│  
+├── alertmodule  
+│   ├── controller  
+│   ├── service  
+│   ├── repository  
+│   ├── entity  
+│   ├── dto  
+│  
+├── common  
+│   └── email  
+
+---
+
+## 🔑 API Endpoints  
+
+### 🔵 Get All Alerts  
+GET /api/alerts  
+
+---
+
+### 🔵 Get Alerts by Asset  
+GET /api/alerts/asset/{assetId}  
+
+---
+
+### 🟡 Update Alert (Resolve)  
+PUT /api/alerts/{id}  
 
 **Request Body**
-
-```json
 {
-  "name": "John Doe",
-  "email": "john@gmail.com",
-  "password": "Valid@123"
+  "status": "RESOLVED"
 }
-```
 
 ---
 
-### 🟢 Login User
+## 📤 Sample Response  
 
-```
-POST /api/auth/login
-```
-
-**Response**
-
-```json
 {
-  "message": "Login Successful",
-  "data": {
-    "id": 1,
-    "name": "John Doe",
-    "role": "OPERATOR"
-  },
-  "token": "JWT_TOKEN"
+  "id": 10,
+  "assetId": 1,
+  "assetName": "Boiler Machine",
+  "type": "THRESHOLD_BREACH",
+  "message": "Threshold crossed for asset Boiler Machine",
+  "status": "ACTIVE",
+  "triggeredAt": "2026-01-01T10:30:00"
 }
-```
 
 ---
 
-### 🔒 Get All Users (Protected)
+## 🔗 Relationships  
 
-```
-GET /api/users
-```
-
-**Header Required**
-
-```
-Authorization: Bearer <JWT_TOKEN>
-```
+- One Asset → Many Alerts  
+- Alert linked to Sensor Data indirectly  
+- Integrated with Email Service  
 
 ---
 
-## 🔐 JWT Flow
+## ⚙️ Business Logic  
 
-1. User logs in
-2. Server generates JWT token
-3. Client stores token
-4. Token is sent in request headers
-5. JWT Filter validates token
-6. Access granted if valid
-
----
-
-## 📧 Email Configuration
-
-Add in `application.properties`:
-
-```
-spring.mail.host=smtp.gmail.com
-spring.mail.port=587
-spring.mail.username=your_email@gmail.com
-spring.mail.password=your_app_password
-spring.mail.properties.mail.smtp.auth=true
-spring.mail.properties.mail.smtp.starttls.enable=true
-```
-
-⚠️ Use **App Password**, not your Gmail password.
+- Compare sensor values with asset thresholds  
+- Detect state transition:
+  - NORMAL → CRITICAL → Create Alert  
+  - CRITICAL → NORMAL → Resolve Alert  
+- Update existing active alert if present  
+- Send email notifications accordingly  
 
 ---
 
-## 🧪 Testing Flow
+## 🔐 Access Control  
 
-1. Register user → email received
-2. Login → JWT token generated
-3. Access protected API with token → success
-4. Without token → 401 Unauthorized
-
----
-
-## 📌 Notes
-
-* Email sending is modular and reusable
-* JWT authentication is implemented at filter level
-* Clean separation of concerns followed
+Role     | Permissions  
+---------|-------------  
+MANAGER  | View all alerts  
+OPERATOR | View alerts of assigned assets  
 
 ---
 
-## ✅ Module Status
+## 🧪 Testing Flow  
 
-```
-✔ User Module Completed
-✔ Authentication Implemented
-✔ Email Integration Done
-✔ Ready for next module
-```
+- Send sensor data exceeding threshold  
+- Verify alert created in DB  
+- Check email received  
+- Send normal data → alert resolved  
+- Verify resolve email sent  
+- Ensure no duplicate alerts created  
+
+---
+
+## 📌 Notes  
+
+- Prevents alert spam using cooldown logic  
+- Ensures only one active alert per asset  
+- Core monitoring module for system reliability  
 
 ---
 
-## 👩‍💻 Author
+## ✅ Module Status  
 
-Developed as part of EAMS project (Module 1)
+✔ Alert Creation Logic Implemented  
+✔ Alert Update & Resolution Done  
+✔ Email Notification Integrated  
+✔ Cooldown Logic Added  
+✔ Ready for Dashboard Integration  
 
 ---
+
+## 👩‍💻 Author  
+Developed as part of EAMS project (Module 4)
