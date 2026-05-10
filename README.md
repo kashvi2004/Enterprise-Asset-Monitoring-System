@@ -1,198 +1,160 @@
-﻿# Enterprise-Asset-Monitoring-System
-# 📌 EAMS - User Module (Module 1)
+# 📌 EAMS - Sensor Data Module (Module 3)
 
-## 🚀 Overview
-
-This module handles **User Management and Authentication** for the EAMS system.
-It includes registration, login, JWT-based authentication, and email notification.
+## 🚀 Overview  
+This module handles **Sensor Data Ingestion and Processing** in the EAMS system.  
+It simulates IoT sensor inputs (temperature, pressure), stores readings, and triggers alerts when thresholds are exceeded.
 
 ---
 
-## 🧱 Tech Stack
-
-* Java 17
-* Spring Boot
-* Spring Security
-* Spring Data JPA
-* MySQL
-* JWT (JSON Web Token)
-* Java Mail Sender
+## 🧱 Tech Stack  
+- Java 17  
+- Spring Boot  
+- Spring Data JPA  
+- MySQL  
+- Lombok  
+- Scheduler (@Scheduled)  
 
 ---
 
-## ✨ Features Implemented
+## ✨ Features Implemented  
 
-### 🔐 Authentication & Security
+### 📡 Sensor Data Ingestion  
+- Accept sensor readings via API  
+- Store temperature and pressure data  
+- Associate readings with assets  
 
-* User Registration
-* User Login
-* Password Encryption using BCrypt
-* JWT Token Generation & Validation
-* Protected APIs using JWT Filter
+### ⏱ Timestamp Tracking  
+- Each reading stored with timestamp  
+- Enables monitoring and historical analysis  
 
----
+### 🚨 Alert Trigger Integration  
+- Checks sensor values against asset thresholds  
+- Triggers alert logic when exceeded  
+- Integrates with Alert Module  
 
-### 👤 User Management
-
-* Get All Users
-* Get User by ID
-* Update User
-* Delete User
-
----
-
-### 📧 Email Integration
-
-* Welcome Email sent after successful registration
-* HTML-based email template
-* Modular Email Service Architecture
+### 🔄 Scheduler Simulation  
+- Automatically generates mock sensor data  
+- Runs at fixed intervals  
+- Simulates real-world IoT behavior  
 
 ---
 
-### 🧾 Validation & Error Handling
-
-* DTO-based validation
-* Proper error messages
-* Clean API responses using generic `ApiResponse<T>`
-
----
-
-## 📂 Project Structure
-
-```
-com.enterprise.eams
-│
-├── usermodule
-│   ├── controller
-│   ├── service
-│   ├── repository
-│   ├── entity
-│   ├── dtos
-│   └── enums
-│
-├── common
-│   ├── security (JWT, filters)
-│   └── email
-│       ├── EmailService
-│       ├── UserEmailService
-```
+## 🧾 Validation & Error Handling  
+- Asset existence validation  
+- Clean exception handling  
+- DTO-based request structure  
 
 ---
 
-## 🔑 API Endpoints
+## 📂 Project Structure  
 
-### 🟢 Register User
+com.enterprise.eams  
+│  
+├── sensormodule  
+│   ├── controller  
+│   ├── service  
+│   ├── repository  
+│   ├── entity  
+│   ├── dto  
+│   ├── scheduler  
+│  
+├── common  
 
-```
-POST /api/auth/register
-```
+---
+
+## 🔑 API Endpoints  
+
+### 🟢 Send Sensor Data  
+POST /api/sensors/send-data  
 
 **Request Body**
-
-```json
 {
-  "name": "John Doe",
-  "email": "john@gmail.com",
-  "password": "Valid@123"
+  "assetId": 1,
+  "temperature": 85,
+  "pressure": 130
 }
-```
 
 ---
 
-### 🟢 Login User
+### 🔵 Get Sensor Data by Asset  
+GET /api/sensors/asset/{id}  
 
-```
-POST /api/auth/login
-```
+---
 
-**Response**
+## 📤 Sample Response  
 
-```json
 {
-  "message": "Login Successful",
-  "data": {
-    "id": 1,
-    "name": "John Doe",
-    "role": "OPERATOR"
-  },
-  "token": "JWT_TOKEN"
+  "id": 101,
+  "temperature": 85,
+  "pressure": 130,
+  "timestamp": "2026-01-01T10:30:00"
 }
-```
 
 ---
 
-### 🔒 Get All Users (Protected)
+## 🔗 Relationships  
 
-```
-GET /api/users
-```
-
-**Header Required**
-
-```
-Authorization: Bearer <JWT_TOKEN>
-```
+- Many SensorData → One Asset  
+- SensorData used to trigger Alerts  
+- Connected to Asset Module for thresholds  
 
 ---
 
-## 🔐 JWT Flow
+## ⚙️ Business Logic  
 
-1. User logs in
-2. Server generates JWT token
-3. Client stores token
-4. Token is sent in request headers
-5. JWT Filter validates token
-6. Access granted if valid
-
----
-
-## 📧 Email Configuration
-
-Add in `application.properties`:
-
-```
-spring.mail.host=smtp.gmail.com
-spring.mail.port=587
-spring.mail.username=your_email@gmail.com
-spring.mail.password=your_app_password
-spring.mail.properties.mail.smtp.auth=true
-spring.mail.properties.mail.smtp.starttls.enable=true
-```
-
-⚠️ Use **App Password**, not your Gmail password.
+- Fetch asset thresholds  
+- Compare incoming values:
+  - If exceeded → status = CRITICAL  
+  - Else → status = NORMAL  
+- Call AlertService for further processing  
 
 ---
 
-## 🧪 Testing Flow
+## 🔄 Scheduler Logic  
 
-1. Register user → email received
-2. Login → JWT token generated
-3. Access protected API with token → success
-4. Without token → 401 Unauthorized
-
----
-
-## 📌 Notes
-
-* Email sending is modular and reusable
-* JWT authentication is implemented at filter level
-* Clean separation of concerns followed
+- Runs periodically using @Scheduled  
+- Fetches all assets  
+- Generates random temperature & pressure values  
+- Calls sensor service internally  
+- Helps simulate real-time monitoring  
 
 ---
 
-## ✅ Module Status
+## 🔐 Access Control  
 
-```
-✔ User Module Completed
-✔ Authentication Implemented
-✔ Email Integration Done
-✔ Ready for next module
-```
+Role     | Permissions  
+---------|-------------  
+MANAGER  | View all sensor data  
+OPERATOR | View assigned asset data  
 
 ---
 
-## 👩‍💻 Author
+## 🧪 Testing Flow  
 
-Developed as part of EAMS project (Module 1)
+- Send manual sensor data via API  
+- Verify data stored in DB  
+- Trigger threshold breach → alert created  
+- Scheduler auto-generates data  
+- Validate repeated execution  
 
 ---
+
+## 📌 Notes  
+
+- Core module for real-time monitoring  
+- Bridges Asset Module and Alert Module  
+- Designed to simulate IoT systems  
+
+---
+
+## ✅ Module Status  
+
+✔ Sensor Data Storage Implemented  
+✔ Threshold Comparison Logic Done  
+✔ Alert Integration Working  
+✔ Scheduler Simulation Added  
+
+---
+
+## 👩‍💻 Author  
+Developed as part of EAMS project (Module 3)
